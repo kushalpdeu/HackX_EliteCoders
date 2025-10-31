@@ -31,6 +31,35 @@ Builds a growing database of real, relatable health experiences.
 Encourages community-driven wellness and self-education.
 
 
+**Screenshots**
 
+
+
+![ec1](https://github.com/user-attachments/assets/1367a938-2b41-45c6-9531-82a53b22dc30)
+
+![ec2](https://github.com/user-attachments/assets/e50aabd9-cf9a-4152-a08b-6989cb536548)
+
+
+
+Team Details:
+1. Vraj Agrawal (Team leader)
+Contact no.: +917016318376
+Organization/College: Pandit Deendayal Energy University (PDEU) (Formerly PDPU),
+Gandhinagar
+
+3. Kushal Jain
+Contact no.: +918780905352
+Organization/College: Pandit Deendayal Energy University (PDEU) (Formerly PDPU),
+Gandhinagar
+
+3.Somil Varotariya
+Contact no.: +919624703021
+Organization/College: Pandit Deendayal Energy University (PDEU) (Formerly PDPU),
+
+
+4.Utsav Prajapati
+Contact no.: +919316492228
+Organization/College: Pandit Deendayal Energy University (PDEU) (Formerly PDPU),
+Gandhinagar 
 
 

@@ -33,51 +33,6 @@ The platform is built using a robust, full-stack architecture to ensure scalabil
 
 ---
 
-## 🚀 Getting Started
-
-To get a local copy of the project up and running, follow these steps.
-
-### Prerequisites
-
-Ensure you have the following installed on your system:
-
-* **Python** (Version 3.x)
-* **pip** (Python package installer)
-* **MySQL** (Database server)
-
-### Installation
-
-1.  **Clone the repository:**
-    ```bash
-    git clone [https://github.com/your-repo-name.git](https://github.com/your-repo-name.git) # Replace with actual link
-    ```
-2.  **Navigate to the project directory:**
-    ```bash
-    cd Health_Experience_Platform
-    ```
-3.  **Install the required Python dependencies:**
-    ```bash
-    pip install -r requirements.txt
-    ```
-4.  **Database Setup:**
-    * Set up your MySQL database and update the connection credentials in the backend configuration file (e.g., `config.py`).
-    * Run the database migration scripts to create the necessary tables.
-5.  **Run the application:**
-    ```bash
-    python run.py # or the equivalent startup command
-    ```
-
----
-
-## 📸 Screenshots
-
-View the application's interface:
-
-| Home/Search View | Experience Detail View |
-| :---: | :---: |
-|  |  |
-
----
 
 ## 👤 Team
 
@@ -92,25 +47,7 @@ This project was developed by **HackX_EliteCoders** from Pandit Deendayal Energy
 
 ---
 
-## 🤝 Contributing
-
-Contributions are what make the open-source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
-
-1.  Fork the Project.
-2.  Create your Feature Branch (`git checkout -b feature/AmazingFeature`).
-3.  Commit your Changes (`git commit -m 'Add some AmazingFeature'`).
-4.  Push to the Branch (`git push origin feature/AmazingFeature`).
-5.  Open a Pull Request.
-
----
-
-## ⚖️ License
-
-*Consider adding an open-source license like MIT or Apache 2.0 and linking it here.*
-
-Distributed under the **[LICENSE NAME]** License. See `LICENSE.md` for more information.
-
-**Screenshots**
+## 📸 Screenshots
 ![ec1](https://github.com/user-attachments/assets/1367a938-2b41-45c6-9531-82a53b22dc30)
 
 ![ec2](https://github.com/user-attachments/assets/e50aabd9-cf9a-4152-a08b-6989cb536548)

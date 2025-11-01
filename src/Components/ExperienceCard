@@ -1,0 +1,114 @@
+import React from "react";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { MessageCircle, ThumbsUp, BookmarkIcon, Clock, AlertCircle } from "lucide-react";
+import { format } from "date-fns";
+import { Link } from "react-router-dom";
+import { createPageUrl } from "@/utils";
+
+const categoryLabels = {
+  respiratory: "Respiratory",
+  digestive: "Digestive",
+  musculoskeletal: "Muscle & Joints",
+  skin: "Skin",
+  mental_health: "Mental Health",
+  sleep: "Sleep",
+  headaches: "Headaches",
+  allergies: "Allergies",
+  nutrition: "Nutrition",
+  fitness: "Fitness",
+  womens_health: "Women's Health",
+  mens_health: "Men's Health",
+  general: "General"
+};
+
+const categoryColors = {
+  respiratory: "bg-blue-100 text-blue-700 border-blue-200",
+  digestive: "bg-amber-100 text-amber-700 border-amber-200",
+  musculoskeletal: "bg-purple-100 text-purple-700 border-purple-200",
+  skin: "bg-pink-100 text-pink-700 border-pink-200",
+  mental_health: "bg-teal-100 text-teal-700 border-teal-200",
+  sleep: "bg-indigo-100 text-indigo-700 border-indigo-200",
+  headaches: "bg-red-100 text-red-700 border-red-200",
+  allergies: "bg-green-100 text-green-700 border-green-200",
+  nutrition: "bg-lime-100 text-lime-700 border-lime-200",
+  fitness: "bg-orange-100 text-orange-700 border-orange-200",
+  womens_health: "bg-rose-100 text-rose-700 border-rose-200",
+  mens_health: "bg-cyan-100 text-cyan-700 border-cyan-200",
+  general: "bg-slate-100 text-slate-700 border-slate-200"
+};
+
+const severityConfig = {
+  mild: { icon: null, color: "text-emerald-600" },
+  moderate: { icon: AlertCircle, color: "text-amber-600" },
+  concerning: { icon: AlertCircle, color: "text-red-600" }
+};
+
+export default function ExperienceCard({ experience, onSave, isSaved }) {
+  const SeverityIcon = severityConfig[experience.severity]?.icon;
+
+  return (
+    <Card className="group hover:shadow-xl transition-all duration-300 border-slate-200/60 bg-white/80 backdrop-blur-sm overflow-hidden">
+      <Link to={`${createPageUrl("ExperienceDetail")}?id=${experience.id}`}>
+        <div className="p-6">
+          <div className="flex items-start justify-between mb-4">
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-3">
+                <Badge className={`${categoryColors[experience.category]} border font-medium`}>
+                  {categoryLabels[experience.category]}
+                </Badge>
+                {experience.duration && (
+                  <div className="flex items-center gap-1 text-xs text-slate-500">
+                    <Clock className="w-3 h-3" />
+                    {experience.duration}
+                  </div>
+                )}
+              </div>
+              <h3 className="text-xl font-bold text-slate-800 mb-2 group-hover:text-cyan-600 transition-colors leading-tight">
+                {experience.title}
+              </h3>
+              <p className="text-slate-600 line-clamp-2 leading-relaxed">
+                {experience.description}
+              </p>
+            </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={(e) => {
+                e.preventDefault();
+                onSave?.();
+              }}
+              className={`ml-3 flex-shrink-0 ${isSaved ? 'text-cyan-600' : 'text-slate-400'} hover:text-cyan-600 hover:bg-cyan-50`}
+            >
+              <BookmarkIcon className="w-5 h-5" fill={isSaved ? "currentColor" : "none"} />
+            </Button>
+          </div>
+
+          {experience.what_helped && (
+            <div className="mb-4 p-3 bg-gradient-to-r from-teal-50 to-cyan-50 rounded-xl border border-teal-100">
+              <p className="text-xs font-semibold text-teal-700 mb-1">What Helped:</p>
+              <p className="text-sm text-slate-700 leading-relaxed">{experience.what_helped}</p>
+            </div>
+          )}
+
+          <div className="flex items-center justify-between pt-4 border-t border-slate-100">
+            <div className="flex items-center gap-4 text-sm text-slate-500">
+              <div className="flex items-center gap-1.5">
+                <ThumbsUp className="w-4 h-4" />
+                <span className="font-medium">{experience.helpful_count || 0}</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <MessageCircle className="w-4 h-4" />
+                <span className="font-medium">{experience.comment_count || 0}</span>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 text-xs text-slate-400">
+              <span>Posted {format(new Date(experience.created_date), "MMM d")}</span>
+            </div>
+          </div>
+        </div>
+      </Link>
+    </Card>
+  );
+}

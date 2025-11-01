@@ -1,0 +1,77 @@
+{
+"name": "HealthExperience",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Brief title of the health experience"
+    },
+    "description": {
+      "type": "string",
+      "description": "Detailed description of the health experience"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "respiratory",
+        "digestive",
+        "musculoskeletal",
+        "skin",
+        "mental_health",
+        "sleep",
+        "headaches",
+        "allergies",
+        "nutrition",
+        "fitness",
+        "womens_health",
+        "mens_health",
+        "general"
+      ],
+      "description": "Category of health concern"
+    },
+    "severity": {
+      "type": "string",
+      "enum": [
+        "mild",
+        "moderate",
+        "concerning"
+      ],
+      "default": "mild",
+      "description": "Severity level"
+    },
+    "duration": {
+      "type": "string",
+      "description": "How long experiencing this (e.g., '3 days', '2 weeks')"
+    },
+    "what_helped": {
+      "type": "string",
+      "description": "What solutions or remedies helped"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Tags for better searchability"
+    },
+    "anonymous_author": {
+      "type": "string",
+      "description": "Anonymous username display"
+    },
+    "helpful_count": {
+      "type": "integer",
+      "default": 0,
+      "description": "Number of people who found this helpful"
+    },
+    "comment_count": {
+      "type": "integer",
+      "default": 0,
+      "description": "Number of comments"
+    }
+  },
+  "required": [
+    "title",
+    "description",
+    "category"
+  ]
+}

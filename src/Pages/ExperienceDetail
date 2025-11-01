@@ -1,0 +1,346 @@
+import React, { useState } from "react";
+import { base44 } from "@/api/base44Client";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
+import { createPageUrl } from "@/utils";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import { 
+  ArrowLeft, ThumbsUp, MessageCircle, Clock, Send, 
+  BookmarkIcon, AlertCircle, Trash2
+} from "lucide-react";
+import { format } from "date-fns";
+
+const categoryLabels = {
+  respiratory: "Respiratory",
+  digestive: "Digestive",
+  musculoskeletal: "Muscle & Joints",
+  skin: "Skin",
+  mental_health: "Mental Health",
+  sleep: "Sleep",
+  headaches: "Headaches",
+  allergies: "Allergies",
+  nutrition: "Nutrition",
+  fitness: "Fitness",
+  womens_health: "Women's Health",
+  mens_health: "Men's Health",
+  general: "General"
+};
+
+const categoryColors = {
+  respiratory: "bg-blue-100 text-blue-700 border-blue-200",
+  digestive: "bg-amber-100 text-amber-700 border-amber-200",
+  musculoskeletal: "bg-purple-100 text-purple-700 border-purple-200",
+  skin: "bg-pink-100 text-pink-700 border-pink-200",
+  mental_health: "bg-teal-100 text-teal-700 border-teal-200",
+  sleep: "bg-indigo-100 text-indigo-700 border-indigo-200",
+  headaches: "bg-red-100 text-red-700 border-red-200",
+  allergies: "bg-green-100 text-green-700 border-green-200",
+  nutrition: "bg-lime-100 text-lime-700 border-lime-200",
+  fitness: "bg-orange-100 text-orange-700 border-orange-200",
+  womens_health: "bg-rose-100 text-rose-700 border-rose-200",
+  mens_health: "bg-cyan-100 text-cyan-700 border-cyan-200",
+  general: "bg-slate-100 text-slate-700 border-slate-200"
+};
+
+export default function ExperienceDetail() {
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const urlParams = new URLSearchParams(window.location.search);
+  const experienceId = urlParams.get("id");
+  const [commentText, setCommentText] = useState("");
+
+  const { data: user } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+  });
+
+  const { data: experience, isLoading } = useQuery({
+    queryKey: ['experience', experienceId],
+    queryFn: async () => {
+      const experiences = await base44.entities.HealthExperience.filter({ id: experienceId });
+      return experiences[0];
+    },
+    enabled: !!experienceId,
+  });
+
+  const { data: comments } = useQuery({
+    queryKey: ['comments', experienceId],
+    queryFn: () => base44.entities.Comment.filter({ experience_id: experienceId }, "-created_date"),
+    enabled: !!experienceId,
+    initialData: [],
+  });
+
+  const { data: savedExperiences } = useQuery({
+    queryKey: ['savedExperiences'],
+    queryFn: () => base44.entities.SavedExperience.list(),
+    initialData: [],
+  });
+
+  const helpfulMutation = useMutation({
+    mutationFn: () => 
+      base44.entities.HealthExperience.update(experienceId, {
+        helpful_count: (experience.helpful_count || 0) + 1
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['experience', experienceId] });
+    },
+  });
+
+  const commentMutation = useMutation({
+    mutationFn: (content) => 
+      base44.entities.Comment.create({
+        experience_id: experienceId,
+        content,
+        anonymous_author: user.anonymous_username || `User${user.id.slice(0, 6)}`,
+      }),
+    onSuccess: async () => {
+      await base44.entities.HealthExperience.update(experienceId, {
+        comment_count: (experience.comment_count || 0) + 1
+      });
+      queryClient.invalidateQueries({ queryKey: ['comments', experienceId] });
+      queryClient.invalidateQueries({ queryKey: ['experience', experienceId] });
+      setCommentText("");
+    },
+  });
+
+  const saveMutation = useMutation({
+    mutationFn: () => 
+      base44.entities.SavedExperience.create({
+        experience_id: experienceId,
+        user_email: user.email
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['savedExperiences'] });
+    },
+  });
+
+  const unsaveMutation = useMutation({
+    mutationFn: (savedId) => base44.entities.SavedExperience.delete(savedId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['savedExperiences'] });
+    },
+  });
+
+  const deleteCommentMutation = useMutation({
+    mutationFn: (commentId) => base44.entities.Comment.delete(commentId),
+    onSuccess: async () => {
+      await base44.entities.HealthExperience.update(experienceId, {
+        comment_count: Math.max(0, (experience.comment_count || 0) - 1)
+      });
+      queryClient.invalidateQueries({ queryKey: ['comments', experienceId] });
+      queryClient.invalidateQueries({ queryKey: ['experience', experienceId] });
+    },
+  });
+
+  const handleSaveToggle = () => {
+    const saved = savedExperiences.find(
+      s => s.experience_id === experienceId && s.user_email === user?.email
+    );
+    if (saved) {
+      unsaveMutation.mutate(saved.id);
+    } else {
+      saveMutation.mutate();
+    }
+  };
+
+  const isSaved = savedExperiences.some(
+    s => s.experience_id === experienceId && s.user_email === user?.email
+  );
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-cyan-50/30">
+        <div className="max-w-4xl mx-auto px-4 md:px-8 py-8 md:py-12">
+          <Skeleton className="h-10 w-32 mb-8" />
+          <Card className="mb-6">
+            <CardContent className="p-8">
+              <Skeleton className="h-8 w-3/4 mb-4" />
+              <Skeleton className="h-32 w-full mb-4" />
+              <Skeleton className="h-20 w-full" />
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
+  if (!experience) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-cyan-50/30 flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-slate-800 mb-2">Experience not found</h2>
+          <Button onClick={() => navigate(createPageUrl("Feed"))}>
+            Back to Feed
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-cyan-50/30">
+      <div className="max-w-4xl mx-auto px-4 md:px-8 py-8 md:py-12">
+        <Button
+          variant="ghost"
+          onClick={() => navigate(createPageUrl("Feed"))}
+          className="mb-8 hover:bg-slate-100 rounded-xl"
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Back to Feed
+        </Button>
+
+        <Card className="mb-6 border-slate-200 shadow-xl bg-white/80 backdrop-blur-sm">
+          <CardContent className="p-8">
+            <div className="flex items-start justify-between mb-6">
+              <div className="flex-1">
+                <div className="flex items-center gap-3 mb-4">
+                  <Badge className={`${categoryColors[experience.category]} border font-medium px-3 py-1`}>
+                    {categoryLabels[experience.category]}
+                  </Badge>
+                  {experience.duration && (
+                    <div className="flex items-center gap-1.5 text-sm text-slate-500">
+                      <Clock className="w-4 h-4" />
+                      {experience.duration}
+                    </div>
+                  )}
+                  <Badge variant="outline" className="text-slate-600">
+                    {experience.severity}
+                  </Badge>
+                </div>
+                <h1 className="text-3xl md:text-4xl font-bold text-slate-800 mb-4 leading-tight">
+                  {experience.title}
+                </h1>
+              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleSaveToggle}
+                className={`ml-4 flex-shrink-0 ${isSaved ? 'text-cyan-600' : 'text-slate-400'} hover:text-cyan-600 hover:bg-cyan-50 rounded-xl`}
+              >
+                <BookmarkIcon className="w-6 h-6" fill={isSaved ? "currentColor" : "none"} />
+              </Button>
+            </div>
+
+            <div className="prose prose-slate max-w-none mb-6">
+              <p className="text-lg text-slate-700 leading-relaxed whitespace-pre-wrap">
+                {experience.description}
+              </p>
+            </div>
+
+            {experience.what_helped && (
+              <div className="mb-6 p-5 bg-gradient-to-r from-teal-50 to-cyan-50 rounded-2xl border border-teal-100">
+                <h3 className="text-sm font-bold text-teal-700 mb-2 uppercase tracking-wide">
+                  What Helped
+                </h3>
+                <p className="text-slate-700 leading-relaxed whitespace-pre-wrap">
+                  {experience.what_helped}
+                </p>
+              </div>
+            )}
+
+            {experience.tags && experience.tags.length > 0 && (
+              <div className="mb-6 flex flex-wrap gap-2">
+                {experience.tags.map(tag => (
+                  <Badge key={tag} variant="secondary" className="bg-slate-100 text-slate-700">
+                    {tag}
+                  </Badge>
+                ))}
+              </div>
+            )}
+
+            <div className="flex items-center justify-between pt-6 border-t border-slate-100">
+              <div className="flex items-center gap-6">
+                <Button
+                  variant="ghost"
+                  onClick={() => helpfulMutation.mutate()}
+                  disabled={helpfulMutation.isPending}
+                  className="flex items-center gap-2 hover:bg-teal-50 hover:text-teal-700 rounded-xl"
+                >
+                  <ThumbsUp className="w-5 h-5" />
+                  <span className="font-semibold">{experience.helpful_count || 0}</span>
+                </Button>
+                <div className="flex items-center gap-2 text-slate-600">
+                  <MessageCircle className="w-5 h-5" />
+                  <span className="font-semibold">{experience.comment_count || 0}</span>
+                </div>
+              </div>
+              <div className="text-sm text-slate-500">
+                Posted {format(new Date(experience.created_date), "MMMM d, yyyy")}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-slate-200 shadow-xl bg-white/80 backdrop-blur-sm">
+          <CardContent className="p-8">
+            <h2 className="text-2xl font-bold text-slate-800 mb-6">
+              Community Responses ({comments.length})
+            </h2>
+
+            <div className="mb-8">
+              <Textarea
+                placeholder="Share your experience or advice..."
+                value={commentText}
+                onChange={(e) => setCommentText(e.target.value)}
+                className="min-h-24 border-slate-200 rounded-xl resize-none mb-4"
+              />
+              <Button
+                onClick={() => commentMutation.mutate(commentText)}
+                disabled={!commentText.trim() || commentMutation.isPending}
+                className="bg-gradient-to-r from-cyan-500 to-teal-500 hover:from-cyan-600 hover:to-teal-600 text-white rounded-xl shadow-lg shadow-cyan-500/25"
+              >
+                <Send className="w-4 h-4 mr-2" />
+                Post Response
+              </Button>
+            </div>
+
+            <div className="space-y-4">
+              {comments.map(comment => (
+                <div
+                  key={comment.id}
+                  className="p-5 bg-slate-50 rounded-2xl border border-slate-100"
+                >
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-gradient-to-br from-cyan-400 to-teal-500 rounded-full flex items-center justify-center text-white font-bold shadow-md">
+                        {comment.anonymous_author[0].toUpperCase()}
+                      </div>
+                      <div>
+                        <p className="font-semibold text-slate-800">{comment.anonymous_author}</p>
+                        <p className="text-xs text-slate-500">
+                          {format(new Date(comment.created_date), "MMM d, yyyy 'at' h:mm a")}
+                        </p>
+                      </div>
+                    </div>
+                    {comment.created_by === user?.email && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => deleteCommentMutation.mutate(comment.id)}
+                        className="text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    )}
+                  </div>
+                  <p className="text-slate-700 leading-relaxed whitespace-pre-wrap">
+                    {comment.content}
+                  </p>
+                </div>
+              ))}
+              {comments.length === 0 && (
+                <div className="text-center py-12">
+                  <MessageCircle className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+                  <p className="text-slate-500">No responses yet. Be the first to share your thoughts!</p>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );

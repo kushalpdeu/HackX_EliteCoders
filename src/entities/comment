@@ -1,0 +1,27 @@
+{
+  "name": "Comment",
+  "type": "object",
+  "properties": {
+    "experience_id": {
+      "type": "string",
+      "description": "ID of the health experience this comment belongs to"
+    },
+    "content": {
+      "type": "string",
+      "description": "Comment content"
+    },
+    "anonymous_author": {
+      "type": "string",
+      "description": "Anonymous username of commenter"
+    },
+    "helpful_count": {
+      "type": "integer",
+      "default": 0,
+      "description": "Number of people who found this comment helpful"
+    }
+  },
+  "required": [
+    "experience_id",
+    "content"
+  ]
+}

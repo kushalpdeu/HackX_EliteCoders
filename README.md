@@ -51,6 +51,9 @@ This project was developed by **HackX_EliteCoders** from Pandit Deendayal Energy
 
 ---
 
+##Demo Video Link
+https://drive.google.com/file/d/1AxLBVovQ3XlLDpL1raARDWbBVyN54o2V/view?usp=sharing
+
 ## 📸 Screenshots
 ![ec1](https://github.com/user-attachments/assets/1367a938-2b41-45c6-9531-82a53b22dc30)
 
